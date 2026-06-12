@@ -63,7 +63,7 @@ public class TelaCadastro extends javax.swing.JDialog {
 
         jLabel5.setText("Sobrenome:");
 
-        jLabel6.setText("Data Nascimento:");
+        jLabel6.setText("Data Nascimento(AAAA-MM-DD):");
 
         jLabel7.setText("Tel. Familia");
 
@@ -166,12 +166,11 @@ public class TelaCadastro extends javax.swing.JDialog {
 
 
             Paciente novoPaciente = new Paciente(nome, sobrenome, genero, dataNasc, quarto, telFamilia, medico, telMedico);
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             conector.criarTabelas();
 
             PacienteDAO dao = new PacienteDAO(conector);
             
-            // código dos sapecas >:)
             dao.cadastrarPaciente(novoPaciente);
 
             javax.swing.JOptionPane.showMessageDialog(this, "Paciente cadastrado com sucesso!");

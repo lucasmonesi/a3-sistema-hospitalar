@@ -62,7 +62,7 @@ public class TelaEdicaoPaciente extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel6.setText("Data Nascimento:");
+        jLabel6.setText("Data Nascimento(AAAA-MM-DD):");
 
         jLabel7.setText("Tel. Familia");
 
@@ -184,7 +184,7 @@ public class TelaEdicaoPaciente extends javax.swing.JDialog {
             // basicamente isso aqui vai dizer qual paciente nós vamos mexer
             pacienteEditado.setId_paciente(this.idPaciente);
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             PacienteDAO dao = new PacienteDAO(conector);
 
             //o código de vocês ai garotada :)

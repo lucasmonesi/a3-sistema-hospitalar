@@ -2,7 +2,6 @@ package com.mycompany.sistemahospitalar;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -34,7 +33,19 @@ class ConectorDB {
           throw new RuntimeException(e);
       }
   }
-
+  public boolean criarBanco() {
+    String sql = "CREATE DATABASE IF NOT EXISTS hospital";
+    try (Connection connect = DriverManager.getConnection(url, usuario, senha);
+      Statement statement = connect.createStatement()) {
+      statement.executeUpdate(sql);
+      System.out.println("Banco de dados 'hospital' criado com sucesso!");
+    }
+    catch (SQLException e) {
+      System.err.println("Erro ao criar o banco de dados: " + e.getMessage());
+    }
+    return true;
+  }
+  
   public boolean criarTabelas() {
     String criarTabelaPacientes = 
         "CREATE TABLE IF NOT EXISTS pacientes (" +
@@ -72,30 +83,6 @@ class ConectorDB {
     }
     catch (SQLException e) {
       System.err.println("Erro ao criar a tabela: " + e.getMessage());
-    }
-    String sql = "SHOW COLUMNS FROM pacientes";
-    try (Connection conexao = DriverManager.getConnection(url, usuario, senha);
-            Statement statement = conexao.createStatement()) {
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                System.out.println("Column Name: " + rs.getString("Field"));
-                System.out.println("Data Type: " + rs.getString("Type"));
-            }
-
-    } catch (SQLException e) {
-        System.err.println("Erro ao CONECTAR: " + e.getMessage());
-    }
-    sql = "SHOW COLUMNS FROM medicamentos";
-    try (Connection conexao = DriverManager.getConnection(url, usuario, senha);
-            Statement statement = conexao.createStatement()) {
-            ResultSet rs = statement.executeQuery(sql);
-            while (rs.next()) {
-                System.out.println("Column Name: " + rs.getString("Field"));
-                System.out.println("Data Type: " + rs.getString("Type"));
-            }
-
-    } catch (SQLException e) {
-        System.err.println("Erro ao CONECTAR: " + e.getMessage());
     }
     return true;
   }

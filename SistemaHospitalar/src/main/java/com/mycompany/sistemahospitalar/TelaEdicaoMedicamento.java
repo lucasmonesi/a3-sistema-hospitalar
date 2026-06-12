@@ -12,6 +12,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
     public int idMedicamento = 0;
     public int idPaciente = 0;
     public java.time.LocalDateTime ultimaDose = null;
+
     /**
      * Creates new form TelaEdicaoMedicamento
      */
@@ -19,7 +20,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
     }
-    
+
     public void carregarDados(Medicamento remedio) {
         this.idMedicamento = remedio.getId_medicamento();
         this.idPaciente = remedio.getId_paciente();
@@ -27,12 +28,20 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
 
         txtNomeRemedio.setText(remedio.getNome_medicamento());
         txtTipoMedicamento.setText(remedio.getTipo_medicamento());
-        txtFrequencia.setText(String.valueOf(remedio.getFrequencia()));
+
+        // Desmembra frequencia (em minutos totais) nos três campos
+        int totalMinutos = remedio.getFrequencia();
+        int dias  = totalMinutos / (60 * 24);
+        int horas = (totalMinutos % (60 * 24)) / 60;
+        int mins  = totalMinutos % 60;
+        txtFrequenciaDias.setText(String.valueOf(dias));
+        txtFrequenciaHoras.setText(String.valueOf(horas));
+        txtFrequenciaMinutos.setText(String.valueOf(mins));
+
         txtInstrucoes.setText(remedio.getInstrucoes());
         txtMotivoUso.setText(remedio.getMotivo_uso());
         txtDosesRestantes.setText(String.valueOf(remedio.getDoses_restantes()));
     }
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -49,7 +58,12 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         txtDosesRestantes = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txtFrequencia = new javax.swing.JTextField();
+        txtFrequenciaDias = new javax.swing.JTextField();
+        txtFrequenciaHoras = new javax.swing.JTextField();
+        txtFrequenciaMinutos = new javax.swing.JTextField();
+        jLabelDias = new javax.swing.JLabel();
+        jLabelHoras = new javax.swing.JLabel();
+        jLabelMinutos = new javax.swing.JLabel();
         txtNomeRemedio = new javax.swing.JTextField();
         txtMotivoUso = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
@@ -60,23 +74,16 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel2.setText("Nome do Remédio:");
-
-        jLabel3.setText("Frequência (Horas):");
-
+        jLabel3.setText("Frequência:");
         jLabel4.setText("Motivo de Uso:");
 
-        txtFrequencia.setToolTipText("");
-        txtFrequencia.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFrequenciaActionPerformed(evt);
-            }
-        });
+        jLabelDias.setText("d");
+        jLabelHoras.setText("h");
+        jLabelMinutos.setText("min");
 
-        jLabel5.setText("Tipo Medicamento:");
-
-        jLabel6.setText("Intruções");
-
-        jLabel7.setText("Doses Restantes");
+        jLabel5.setText("Via de Administração:");
+        jLabel6.setText("Instruções:");
+        jLabel7.setText("Doses Restantes:");
 
         jButton1.setText("Editar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -92,26 +99,35 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING))
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtMotivoUso, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtFrequencia, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtNomeRemedio, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNomeRemedio, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(txtFrequenciaDias, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabelDias)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtFrequenciaHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabelHoras)
+                        .addGap(6, 6, 6)
+                        .addComponent(txtFrequenciaMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(2, 2, 2)
+                        .addComponent(jLabelMinutos))
+                    .addComponent(txtMotivoUso, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING))
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtDosesRestantes, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTipoMedicamento, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtInstrucoes, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtTipoMedicamento, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtDosesRestantes, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -130,7 +146,12 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(txtFrequencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtFrequenciaDias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelDias)
+                            .addComponent(txtFrequenciaHoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelHoras)
+                            .addComponent(txtFrequenciaMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelMinutos))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
@@ -155,10 +176,6 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void txtFrequenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFrequenciaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtFrequenciaActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // botão editar
         try {
@@ -167,19 +184,24 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
             String instrucoes = txtInstrucoes.getText();
             String motivo = txtMotivoUso.getText();
 
-            int frequencia = 0;
-            if (!txtFrequencia.getText().trim().isEmpty()) {
-                frequencia = Integer.parseInt(txtFrequencia.getText().trim());
-            }
+            // Combina dias, horas e minutos em minutos totais
+            int dias = 0, horas = 0, mins = 0;
+            if (!txtFrequenciaDias.getText().trim().isEmpty())
+                dias = Integer.parseInt(txtFrequenciaDias.getText().trim());
+            if (!txtFrequenciaHoras.getText().trim().isEmpty())
+                horas = Integer.parseInt(txtFrequenciaHoras.getText().trim());
+            if (!txtFrequenciaMinutos.getText().trim().isEmpty())
+                mins = Integer.parseInt(txtFrequenciaMinutos.getText().trim());
+            int frequencia = dias * 60 * 24 + horas * 60 + mins;
 
-            int doses = 0;
+            int doses = -1;
             if (!txtDosesRestantes.getText().trim().isEmpty()) {
                 doses = Integer.parseInt(txtDosesRestantes.getText().trim());
             }
 
             Medicamento remedioEditado = new Medicamento(this.idMedicamento, this.idPaciente, nome, tipo, instrucoes, frequencia, this.ultimaDose, doses, motivo);
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             MedicamentoDAO dao = new MedicamentoDAO(conector);
             dao.atualizarMedicamento(remedioEditado);
 
@@ -195,11 +217,6 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -216,9 +233,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TelaEdicaoMedicamento.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
-        /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 TelaEdicaoMedicamento dialog = new TelaEdicaoMedicamento(new javax.swing.JFrame(), true);
@@ -241,8 +256,13 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabelDias;
+    private javax.swing.JLabel jLabelHoras;
+    private javax.swing.JLabel jLabelMinutos;
     private javax.swing.JTextField txtDosesRestantes;
-    private javax.swing.JTextField txtFrequencia;
+    private javax.swing.JTextField txtFrequenciaDias;
+    private javax.swing.JTextField txtFrequenciaHoras;
+    private javax.swing.JTextField txtFrequenciaMinutos;
     private javax.swing.JTextField txtInstrucoes;
     private javax.swing.JTextField txtMotivoUso;
     private javax.swing.JTextField txtNomeRemedio;

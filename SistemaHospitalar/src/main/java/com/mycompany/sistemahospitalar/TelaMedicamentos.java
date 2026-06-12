@@ -16,44 +16,50 @@ import javax.swing.table.DefaultTableCellRenderer;
  */
 public class TelaMedicamentos extends javax.swing.JDialog {
     public int idPaciente = 0;
+
     /**
      * Creates new form TelaMedicamentos
      */
     public TelaMedicamentos(java.awt.Frame parent, boolean modal, int id, String nomeSelecionado, String sobrenomeSelecionado) {
         super(parent, modal);
         initComponents();
-        
-        this.idPaciente = id; // Guarda o ID secretamente
+
+        this.idPaciente = id;
         lblNomePaciente.setText("Paciente: " + nomeSelecionado + " " + sobrenomeSelecionado);
-        
+
         carregarTabelaRemedios();
-        
+
         // Atualiza a tabela a cada 1 minuto
         javax.swing.Timer timer = new javax.swing.Timer(60000, e -> {
             jTable1.repaint();
         });
-
         timer.start();
     }
-    
+
     public void carregarTabelaRemedios() {
         javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
-        modelo.setRowCount(0); // Limpa a tabela velha
+        modelo.setRowCount(0);
 
         try {
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             MedicamentoDAO dao = new MedicamentoDAO(conector);
 
             for (Medicamento m : dao.listarMedicamentos()) {
-
                 if (m.getId_paciente() == this.idPaciente) {
+
+                    // Formata frequência como "Xd Xh Xmin" para exibição
+                    int totalMin = m.getFrequencia();
+                    int dias  = totalMin / (60 * 24);
+                    int horas = (totalMin % (60 * 24)) / 60;
+                    int mins  = totalMin % 60;
+                    String freqFormatada = dias + "d " + horas + "h " + mins + "min";
 
                     modelo.addRow(new Object[]{
                         m.getId_medicamento(),
                         m.getNome_medicamento(),
-                        m.getFrequencia() + " horas",
+                        freqFormatada,
                         m.getUltima_dose() != null ? m.getUltima_dose() : "Não tomada",
-                        m.getDoses_restantes() 
+                        m.getDoses_restantes()
                     });
                 }
             }
@@ -62,97 +68,81 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         }
         aplicarCorHorarioMedicamento();
     }
-    
-    // QUE SUFOCOO
+
     private void aplicarCorHorarioMedicamento() {
 
-    jTable1.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        jTable1.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
 
-        @Override
-        public Component getTableCellRendererComponent(
-                JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column) {
+            @Override
+            public Component getTableCellRendererComponent(
+                    JTable table,
+                    Object value,
+                    boolean isSelected,
+                    boolean hasFocus,
+                    int row,
+                    int column) {
 
-            Component c = super.getTableCellRendererComponent(
-                    table, value, isSelected, hasFocus, row, column);
+                Component c = super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
 
-            try {
-
-                // Frequência
-                String freqTexto = table.getValueAt(row, 2).toString();
-                int frequencia = Integer.parseInt(
-                        freqTexto.replace(" horas", "").trim()
-                );
-
-                // Doses restantes
-                int dosesRestantes = Integer.parseInt(
-                        table.getValueAt(row, 4).toString()
-                );
-
-                // Última dose
-                Object ultimaDoseObj = table.getValueAt(row, 3);
-
-                boolean atrasado = false;
-
-                if (frequencia <= 0) {
-
-                    atrasado = false;
-
-                } else if (dosesRestantes <= 0) {
-
-                    atrasado = false;
-
-                } else if (ultimaDoseObj == null ||
-                        ultimaDoseObj.toString().equals("Não tomada")) {
-
-                    atrasado = true;
-
-                } else {
-
-                    LocalDateTime ultimaDose =
-                            LocalDateTime.parse(ultimaDoseObj.toString());
-
-                    LocalDateTime proximaDose =
-                            ultimaDose.plusMinutes(frequencia);
-
-                    // Verifica se passou do horário
-                    atrasado = LocalDateTime.now()
-                            .isAfter(proximaDose);
-                }
-
-                if (isSelected) {
-
-                    c.setBackground(table.getSelectionBackground());
-                    c.setForeground(table.getSelectionForeground());
-
-                } else {
-
-                    if (atrasado) {
-
-                        c.setBackground(Color.RED);
-                        c.setForeground(Color.WHITE);
-
-                    } else {
-
-                        c.setBackground(Color.WHITE);
-                        c.setForeground(Color.BLACK);
+                try {
+                    // Frequência no formato "Xd Xh Xmin" — converte de volta para minutos totais
+                    String freqTexto = table.getValueAt(row, 2).toString();
+                    int frequencia = 0;
+                    java.util.regex.Matcher m = java.util.regex.Pattern
+                            .compile("(\\d+)d\\s*(\\d+)h\\s*(\\d+)min")
+                            .matcher(freqTexto);
+                    if (m.find()) {
+                        frequencia = Integer.parseInt(m.group(1)) * 60 * 24
+                                   + Integer.parseInt(m.group(2)) * 60
+                                   + Integer.parseInt(m.group(3));
                     }
+
+                    // Doses restantes
+                    int dosesRestantes = Integer.parseInt(
+                            table.getValueAt(row, 4).toString()
+                    );
+
+                    // Última dose
+                    Object ultimaDoseObj = table.getValueAt(row, 3);
+
+                    boolean atrasado = false;
+
+                    if (frequencia <= 0) {
+                        atrasado = false;
+                    } else if (ultimaDoseObj == null ||
+                            ultimaDoseObj.toString().equals("Não tomada")) {
+                        atrasado = true;
+                    } else {
+                        LocalDateTime ultimaDose =
+                                LocalDateTime.parse(ultimaDoseObj.toString());
+                        LocalDateTime proximaDose =
+                                ultimaDose.plusMinutes(frequencia);
+                        atrasado = LocalDateTime.now().isAfter(proximaDose);
+                    }
+
+                    if (isSelected) {
+                        c.setBackground(table.getSelectionBackground());
+                        c.setForeground(table.getSelectionForeground());
+                    } else {
+                        if (atrasado) {
+                            c.setBackground(Color.RED);
+                            c.setForeground(Color.WHITE);
+                        } else {
+                            c.setBackground(Color.WHITE);
+                            c.setForeground(Color.BLACK);
+                        }
+                    }
+
+                } catch (Exception ex) {
+                    c.setBackground(Color.WHITE);
+                    c.setForeground(Color.BLACK);
                 }
 
-            } catch (Exception ex) {
-
-                c.setBackground(Color.WHITE);
-                c.setForeground(Color.BLACK);
+                return c;
             }
-
-            return c;
-        }
-    });
-}
+        });
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -167,7 +157,12 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txtFrequencia = new javax.swing.JTextField();
+        txtFrequenciaDias = new javax.swing.JTextField();
+        txtFrequenciaHoras = new javax.swing.JTextField();
+        txtFrequenciaMinutos = new javax.swing.JTextField();
+        jLabelDias = new javax.swing.JLabel();
+        jLabelHoras = new javax.swing.JLabel();
+        jLabelMinutos = new javax.swing.JLabel();
         txtNomeRemedio = new javax.swing.JTextField();
         txtMotivoUso = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
@@ -189,23 +184,16 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         lblNomePaciente.setText("Paciente: João");
 
         jLabel2.setText("Nome do Remédio:");
-
-        jLabel3.setText("Frequência (Horas):");
-
+        jLabel3.setText("Frequência:");
         jLabel4.setText("Motivo de Uso:");
 
-        txtFrequencia.setToolTipText("");
-        txtFrequencia.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtFrequenciaActionPerformed(evt);
-            }
-        });
+        jLabelDias.setText("d");
+        jLabelHoras.setText("h");
+        jLabelMinutos.setText("min");
 
-        jLabel5.setText("Tipo Medicamento:");
-
-        jLabel6.setText("Intruções");
-
-        jLabel7.setText("Doses Restantes");
+        jLabel5.setText("Via de Administração:");
+        jLabel6.setText("Instruções:");
+        jLabel7.setText("Doses Restantes:");
 
         jButton1.setText("Adicionar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -262,20 +250,29 @@ public class TelaMedicamentos extends javax.swing.JDialog {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                            .addComponent(jLabel2)
+                                            .addComponent(jLabel3)
                                             .addComponent(jLabel4))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(txtMotivoUso, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtFrequencia, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(txtNomeRemedio, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addComponent(txtNomeRemedio, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(txtFrequenciaDias, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(2, 2, 2)
+                                                .addComponent(jLabelDias)
+                                                .addGap(6, 6, 6)
+                                                .addComponent(txtFrequenciaHoras, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(2, 2, 2)
+                                                .addComponent(jLabelHoras)
+                                                .addGap(6, 6, 6)
+                                                .addComponent(txtFrequenciaMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addGap(2, 2, 2)
+                                                .addComponent(jLabelMinutos))
+                                            .addComponent(txtMotivoUso, javax.swing.GroupLayout.PREFERRED_SIZE, 196, javax.swing.GroupLayout.PREFERRED_SIZE))
                                         .addGap(18, 18, 18)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING))
+                                            .addComponent(jLabel5)
+                                            .addComponent(jLabel6)
                                             .addComponent(jLabel7))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -310,7 +307,12 @@ public class TelaMedicamentos extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(txtFrequencia, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtFrequenciaDias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelDias)
+                            .addComponent(txtFrequenciaHoras, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelHoras)
+                            .addComponent(txtFrequenciaMinutos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabelMinutos))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel4)
@@ -344,17 +346,21 @@ public class TelaMedicamentos extends javax.swing.JDialog {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // Botão adicionar
-        // ARRUMARRRRRRRRRRRR
         try {
             String nome = txtNomeRemedio.getText();
             String tipo = txtTipoMedicamento.getText();
             String instrucoes = txtInstrucoes.getText();
             String motivo = txtMotivoUso.getText();
 
-            int frequencia = 0;
-            if (!txtFrequencia.getText().trim().isEmpty()) {
-                frequencia = Integer.parseInt(txtFrequencia.getText().trim());
-            }
+            // Combina dias, horas e minutos em minutos totais
+            int dias = 0, horas = 0, mins = 0;
+            if (!txtFrequenciaDias.getText().trim().isEmpty())
+                dias = Integer.parseInt(txtFrequenciaDias.getText().trim());
+            if (!txtFrequenciaHoras.getText().trim().isEmpty())
+                horas = Integer.parseInt(txtFrequenciaHoras.getText().trim());
+            if (!txtFrequenciaMinutos.getText().trim().isEmpty())
+                mins = Integer.parseInt(txtFrequenciaMinutos.getText().trim());
+            int frequencia = dias * 60 * 24 + horas * 60 + mins;
 
             int doses = 0;
             if (!txtDosesRestantes.getText().trim().isEmpty()) {
@@ -365,20 +371,22 @@ public class TelaMedicamentos extends javax.swing.JDialog {
 
             Medicamento novoRemedio = new Medicamento(this.idPaciente, nome, tipo, instrucoes, frequencia, ultimaDose, doses, motivo);
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             MedicamentoDAO dao = new MedicamentoDAO(conector);
 
             dao.cadastrarMedicamento(novoRemedio);
 
             javax.swing.JOptionPane.showMessageDialog(this, "Remédio adicionado com sucesso!");
-            
+
             carregarTabelaRemedios();
 
             txtNomeRemedio.setText("");
             txtTipoMedicamento.setText("");
             txtInstrucoes.setText("");
             txtMotivoUso.setText("");
-            txtFrequencia.setText("");
+            txtFrequenciaDias.setText("");
+            txtFrequenciaHoras.setText("");
+            txtFrequenciaMinutos.setText("");
             txtDosesRestantes.setText("");
 
         } catch (NumberFormatException ex) {
@@ -390,22 +398,19 @@ public class TelaMedicamentos extends javax.swing.JDialog {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // Botão excluir
-        // 1. Verifica qual é a linha selecionada na tabela
         int linhaSelecionada = jTable1.getSelectedRow();
 
         if (linhaSelecionada == -1) {
             javax.swing.JOptionPane.showMessageDialog(this, "Por favor, selecione um remédio na tabela para excluir!", "Aviso", javax.swing.JOptionPane.WARNING_MESSAGE);
-            return; 
+            return;
         }
 
         int resposta = javax.swing.JOptionPane.showConfirmDialog(this, "Tem a certeza que deseja excluir este remédio permanentemente?", "Confirmar Exclusão", javax.swing.JOptionPane.YES_NO_OPTION, javax.swing.JOptionPane.WARNING_MESSAGE);
         if (resposta == javax.swing.JOptionPane.YES_OPTION) {
             try {
-
                 int idRemedio = Integer.parseInt(jTable1.getValueAt(linhaSelecionada, 0).toString());
 
-
-                ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+                ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
                 MedicamentoDAO dao = new MedicamentoDAO(conector);
 
                 dao.excluirMedicamentoPorID(idRemedio);
@@ -421,7 +426,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
-        // botão de registrar dose tomad
+        // Botão de registrar dose tomada
         int linhaSelecionada = jTable1.getSelectedRow();
 
         if (linhaSelecionada == -1) {
@@ -432,13 +437,12 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         try {
             int idMedicamento = Integer.parseInt(jTable1.getValueAt(linhaSelecionada, 0).toString());
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             MedicamentoDAO dao = new MedicamentoDAO(conector);
 
             Medicamento remedioAtual = dao.getMedicamentoPorID(idMedicamento);
 
             if (remedioAtual != null) {
-
                 remedioAtual.setUltima_dose(java.time.LocalDateTime.now());
 
                 if (remedioAtual.getDoses_restantes() > 0) {
@@ -459,10 +463,6 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jButton4ActionPerformed
 
-    private void txtFrequenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtFrequenciaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtFrequenciaActionPerformed
-
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // Botão editar
         int linhaSelecionada = jTable1.getSelectedRow();
@@ -475,7 +475,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         try {
             int idRemedio = Integer.parseInt(jTable1.getValueAt(linhaSelecionada, 0).toString());
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/projeto", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
             MedicamentoDAO dao = new MedicamentoDAO(conector);
             Medicamento remedioAtual = dao.getMedicamentoPorID(idRemedio);
 
@@ -496,11 +496,6 @@ public class TelaMedicamentos extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -517,9 +512,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TelaMedicamentos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
 
-        /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 TelaMedicamentos dialog = new TelaMedicamentos(new javax.swing.JFrame(), true, 0, "Teste", "Teste");
@@ -545,11 +538,16 @@ public class TelaMedicamentos extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabelDias;
+    private javax.swing.JLabel jLabelHoras;
+    private javax.swing.JLabel jLabelMinutos;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel lblNomePaciente;
     private javax.swing.JTextField txtDosesRestantes;
-    private javax.swing.JTextField txtFrequencia;
+    private javax.swing.JTextField txtFrequenciaDias;
+    private javax.swing.JTextField txtFrequenciaHoras;
+    private javax.swing.JTextField txtFrequenciaMinutos;
     private javax.swing.JTextField txtInstrucoes;
     private javax.swing.JTextField txtMotivoUso;
     private javax.swing.JTextField txtNomeRemedio;
