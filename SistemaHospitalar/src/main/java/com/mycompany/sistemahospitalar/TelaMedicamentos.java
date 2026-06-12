@@ -362,7 +362,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
                 mins = Integer.parseInt(txtFrequenciaMinutos.getText().trim());
             int frequencia = dias * 60 * 24 + horas * 60 + mins;
 
-            int doses = 0;
+            int doses = -1; // -1 para indicar que não foi preenchido
             if (!txtDosesRestantes.getText().trim().isEmpty()) {
                 doses = Integer.parseInt(txtDosesRestantes.getText().trim());
             }
@@ -447,7 +447,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
 
                 if (remedioAtual.getDoses_restantes() > 0) {
                     remedioAtual.setDoses_restantes(remedioAtual.getDoses_restantes() - 1);
-                } else {
+                } else if (remedioAtual.getDoses_restantes() == 0) {
                     javax.swing.JOptionPane.showMessageDialog(this, "doses já acabaram", "Aviso", javax.swing.JOptionPane.WARNING_MESSAGE);
                 }
 
