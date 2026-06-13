@@ -222,7 +222,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
             }
         });
 
-        jButton3.setText("Editar Selecionado");
+        jButton3.setText("Gerenciar Selecionado");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
