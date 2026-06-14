@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
+
 package com.mycompany.sistemahospitalar;
 
 import java.awt.Color;
@@ -265,13 +262,13 @@ public class TelaPrincipal extends javax.swing.JFrame {
         );
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void txtBuscaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtBuscaActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtBuscaActionPerformed
+    private void txtBuscaActionPerformed(java.awt.event.ActionEvent evt) {
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    }
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
         String busca = txtBusca.getText();
 
         javax.swing.table.DefaultTableModel modelo = (javax.swing.table.DefaultTableModel) jTable1.getModel();
@@ -286,17 +283,17 @@ public class TelaPrincipal extends javax.swing.JFrame {
 
         // Reinstala o renderer pois setRowSorter pode resetá-lo
         aplicarRenderer();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         TelaCadastro tela = new TelaCadastro(this, true);
         tela.setLocationRelativeTo(null);
         tela.setVisible(true);
 
         carregarTabela();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
         int linhaSelecionada = jTable1.getSelectedRow();
 
         if (linhaSelecionada == -1) {
@@ -315,7 +312,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         carregarTabela();
     }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {
         int linha = jTable1.getSelectedRow();
 
         if (linha == -1) {
@@ -339,9 +336,9 @@ public class TelaPrincipal extends javax.swing.JFrame {
         telaEdit.setVisible(true);
 
         carregarTabela();
-    }//GEN-LAST:event_jButton5ActionPerformed
+    }
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {
         int linha = jTable1.getSelectedRow();
 
         if (linha == -1) {
@@ -367,16 +364,16 @@ public class TelaPrincipal extends javax.swing.JFrame {
                 javax.swing.JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
             }
         }
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {
         carregarTabela();
-    }//GEN-LAST:event_jButton6ActionPerformed
+    }
 
     public static void main(String args[]) {
-        ConectorDB criadorDataBase = new ConectorDB("jdbc:mysql://localhost:3306", "root", "root");
+        ConectorDB criadorDataBase = new ConectorDB("jdbc:mysql://localhost:3306", "root", "root"); //Substitua o url, usuario e senha pelo seu URL, usuário e senha do MySQL
         criadorDataBase.criarBanco();
-        ConectorDB conectorData = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
+        ConectorDB conectorData = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root"); //Substitua o url, usuario e senha pelo seu URL, usuário e senha do MySQL
         conectorData.criarTabelas();
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -402,7 +399,7 @@ public class TelaPrincipal extends javax.swing.JFrame {
         });
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
@@ -413,5 +410,4 @@ public class TelaPrincipal extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField txtBusca;
-    // End of variables declaration//GEN-END:variables
 }

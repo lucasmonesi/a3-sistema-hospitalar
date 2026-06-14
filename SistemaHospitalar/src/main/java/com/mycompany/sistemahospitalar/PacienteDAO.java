@@ -1,7 +1,5 @@
 package com.mycompany.sistemahospitalar;
 
-import com.mycompany.sistemahospitalar.Paciente;
-import com.mycompany.sistemahospitalar.ConectorDB;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

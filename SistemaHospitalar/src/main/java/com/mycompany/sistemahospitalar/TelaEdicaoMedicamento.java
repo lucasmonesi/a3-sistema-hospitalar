@@ -201,7 +201,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
 
             Medicamento remedioEditado = new Medicamento(this.idMedicamento, this.idPaciente, nome, tipo, instrucoes, frequencia, this.ultimaDose, doses, motivo);
 
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root"); //Substitua o url, usuario e senha pelo seu URL, usuário e senha do MySQL
             MedicamentoDAO dao = new MedicamentoDAO(conector);
             dao.atualizarMedicamento(remedioEditado);
 
@@ -211,7 +211,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         } catch (Exception ex) {
             javax.swing.JOptionPane.showMessageDialog(this, "Erro ao atualizar: " + ex.getMessage());
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
     /**
      * @param args the command line arguments
@@ -248,7 +248,7 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
         });
     }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -267,5 +267,4 @@ public class TelaEdicaoMedicamento extends javax.swing.JDialog {
     private javax.swing.JTextField txtMotivoUso;
     private javax.swing.JTextField txtNomeRemedio;
     private javax.swing.JTextField txtTipoMedicamento;
-    // End of variables declaration//GEN-END:variables
 }

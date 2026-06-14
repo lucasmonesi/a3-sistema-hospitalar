@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
- */
 package com.mycompany.sistemahospitalar;
 
 import java.awt.Color;
@@ -41,7 +37,7 @@ public class TelaMedicamentos extends javax.swing.JDialog {
         modelo.setRowCount(0);
 
         try {
-            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root");
+            ConectorDB conector = new ConectorDB("jdbc:mysql://localhost:3306/hospital", "root", "root"); //Substitua o url, usuario e senha pelo seu URL, usuário e senha do MySQL
             MedicamentoDAO dao = new MedicamentoDAO(conector);
 
             for (Medicamento m : dao.listarMedicamentos()) {
